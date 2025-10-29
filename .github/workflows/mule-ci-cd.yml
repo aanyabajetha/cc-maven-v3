@@ -3,14 +3,10 @@ name: Mule CI / CD
 on:
   push:
     branches:
-      - master
+      - master   # or whichever branch you deploy from
   pull_request:
     branches:
       - master
-
-env:
-  ANYPOINT_CONNECTED_APP_CLIENT_ID: ${{ secrets.ANYPOINT_CONNECTED_APP_CLIENT_ID }}
-  ANYPOINT_CONNECTED_APP_CLIENT_SECRET: ${{ secrets.ANYPOINT_CONNECTED_APP_CLIENT_SECRET }}
 
 jobs:
   build:
@@ -18,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up JDK 11
@@ -32,22 +28,28 @@ jobs:
         run: mvn clean package -B
 
       - name: Archive build artifact
-        uses: actions/upload-artifact@v4   # ✅ Updated to v4
+        uses: actions/upload-artifact@v4
         with:
           name: mule-app
-          path: target/*.jar  # Adjust if your artifact name differs
+          path: target/*.jar  # adjust if your artifact name is different
 
   publish-and-deploy:
     name: Publish to Exchange & Deploy to CloudHub
     runs-on: ubuntu-latest
     needs: build
 
+    # 👇 Inject the credentials as JVM options so Maven can resolve ${env.VAR}
+    env:
+      MAVEN_OPTS: >
+        -Denv.ANYPOINT_CONNECTED_APP_CLIENT_ID=${{ secrets.ANYPOINT_CONNECTED_APP_CLIENT_ID }}
+        -Denv.ANYPOINT_CONNECTED_APP_CLIENT_SECRET=${{ secrets.ANYPOINT_CONNECTED_APP_CLIENT_SECRET }}
+
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Download built artifact
-        uses: actions/download-artifact@v4   # ✅ Updated to v4
+        uses: actions/download-artifact@v4
         with:
           name: mule-app
           path: target/
@@ -59,24 +61,18 @@ jobs:
           java-version: '11'
           cache: 'maven'
 
-      - name: Verify Maven settings.xml exists
+      - name: Configure Maven settings
         run: |
-          if [ ! -f "./settings.xml" ]; then
-            echo "❌ settings.xml not found. Make sure it's in the repo root."
-            exit 1
-          fi
+          mkdir -p ~/.m2
+          cp ./settings.xml ~/.m2/settings.xml
+
+      - name: Debug Maven env vars (optional — remove after testing)
+        run: |
+          echo "Client ID: ${ANYPOINT_CONNECTED_APP_CLIENT_ID}"
+          echo "Client Secret length: ${#ANYPOINT_CONNECTED_APP_CLIENT_SECRET}"
 
       - name: Deploy to Exchange (publish)
-        run: |
-          echo "Publishing to Exchange..."
-          mvn deploy -B -Dmaven.test.skip=true --settings ./settings.xml \
-            -Denv.ANYPOINT_CONNECTED_APP_CLIENT_ID=${{ secrets.ANYPOINT_CONNECTED_APP_CLIENT_ID }} \
-            -Denv.ANYPOINT_CONNECTED_APP_CLIENT_SECRET=${{ secrets.ANYPOINT_CONNECTED_APP_CLIENT_SECRET }}
+        run: mvn deploy -B -Dmaven.test.skip=true --settings ~/.m2/settings.xml
 
       - name: Deploy to CloudHub
-        run: |
-          echo "Deploying to CloudHub..."
-          mvn clean deploy -B -DmuleDeploy --settings ./settings.xml \
-            -Denv.ANYPOINT_CONNECTED_APP_CLIENT_ID=${{ secrets.ANYPOINT_CONNECTED_APP_CLIENT_ID }} \
-            -Denv.ANYPOINT_CONNECTED_APP_CLIENT_SECRET=${{ secrets.ANYPOINT_CONNECTED_APP_CLIENT_SECRET }}
-
+        run: mvn clean deploy -B -DmuleDeploy --settings ~/.m2/settings.xml
