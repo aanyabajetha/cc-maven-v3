@@ -1,0 +1,71 @@
+# ============================
+# MuleSoft Maven Project .gitignore
+# Keep only:
+#   - src/
+#   - pom.xml
+#   - settings.xml
+#   - mule-artifact.json
+# ============================
+
+# Ignore everything by default
+*
+
+# Allow only these
+!src/
+!pom.xml
+!settings.xml
+!mule-artifact.json
+!.gitignore
+
+# ============================
+# Ignore within src what shouldn't be tracked
+# (optional — for example, local test data or configs)
+# ============================
+src/main/resources/*.properties.local
+src/main/resources/*.yaml.local
+src/main/resources/*.env
+src/test/resources/*.env
+
+# ============================
+# Maven build artifacts
+# ============================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# ============================
+# IDE and system files
+# ============================
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# VS Code
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# ============================
+# Logs, temporary files
+# ============================
+*.log
+*.tmp
+*.bak
+
+# ============================
+# Mule specific
+# ============================
+.mule/
+.mule-artifacts/
+mule-deploy.properties
+deployment/
+
+.tooling-project
