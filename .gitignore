@@ -11,6 +11,7 @@
 *
 
 # Allow only these
+!src/
 !src/**
 !settings.xml
 !mule-artifact.json

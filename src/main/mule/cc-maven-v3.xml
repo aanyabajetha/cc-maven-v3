@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<flow name="cc-maven-v1Flow" doc:id="d52716a1-67d8-498e-8e0d-64dad1cde92b" >
+		<scheduler doc:name="Scheduler" doc:id="3c77013e-90f7-4352-b2fc-528e8761fdff" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="1" startDelay="1" timeUnit="HOURS"/>
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="INFO : START" doc:id="ea71e91b-6ff2-4ce7-a15b-00f27dc0cbf9" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;    appName: app.name,&#10;    flowName : flow.name,&#10;    position: "Flow Start",&#10;    message: "Processing for Alerts Started",&#10;    correlationId: correlationId&#10;}]'/>
+		<ee:transform doc:name="Build Payload" doc:id="6c59548f-a335-4741-9cef-cef8ce4a5daf" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"result": "Accepted",
+	"status": "true"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="INFO : END" doc:id="6ceb7f5c-5660-4843-a6fb-cc1ae94fc2cf" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;    appName: app.name,&#10;    flowName : flow.name,&#10;    position: "Flow End",&#10;    message: "Processing for Alerts Started",&#10;    correlationId: correlationId&#10;}]'/>
+	</flow>
+	</mule>
