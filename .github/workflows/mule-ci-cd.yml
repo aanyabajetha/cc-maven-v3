@@ -67,7 +67,16 @@ jobs:
           fi
 
       - name: Deploy to Exchange (publish)
-        run: mvn deploy -B -Dmaven.test.skip=true --settings ./settings.xml
+        run: |
+          echo "Publishing to Exchange..."
+          mvn deploy -B -Dmaven.test.skip=true --settings ./settings.xml \
+            -Denv.ANYPOINT_CONNECTED_APP_CLIENT_ID=${{ secrets.ANYPOINT_CONNECTED_APP_CLIENT_ID }} \
+            -Denv.ANYPOINT_CONNECTED_APP_CLIENT_SECRET=${{ secrets.ANYPOINT_CONNECTED_APP_CLIENT_SECRET }}
 
       - name: Deploy to CloudHub
-        run: mvn clean deploy -B -DmuleDeploy --settings ./settings.xml
+        run: |
+          echo "Deploying to CloudHub..."
+          mvn clean deploy -B -DmuleDeploy --settings ./settings.xml \
+            -Denv.ANYPOINT_CONNECTED_APP_CLIENT_ID=${{ secrets.ANYPOINT_CONNECTED_APP_CLIENT_ID }} \
+            -Denv.ANYPOINT_CONNECTED_APP_CLIENT_SECRET=${{ secrets.ANYPOINT_CONNECTED_APP_CLIENT_SECRET }}
+
