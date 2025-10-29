@@ -13,6 +13,8 @@
 # Allow only these
 !src/
 !src/**
+!.github/
+!.github/**
 !settings.xml
 !mule-artifact.json
 !.gitignore
