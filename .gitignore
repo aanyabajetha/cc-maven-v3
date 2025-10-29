@@ -11,11 +11,11 @@
 *
 
 # Allow only these
-!src/
-!pom.xml
+!src/**
 !settings.xml
 !mule-artifact.json
 !.gitignore
+
 
 # ============================
 # Ignore within src what shouldn't be tracked
