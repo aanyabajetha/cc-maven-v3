@@ -3,7 +3,7 @@ name: Mule CI / CD
 on:
   push:
     branches:
-      - master   # or whichever branch you deploy from
+      - master        # adjust as needed
   pull_request:
     branches:
       - master
@@ -24,21 +24,21 @@ jobs:
           java-version: '11'
           cache: 'maven'
 
-      - name: Build with Maven
+      - name: Build Mule Application
         run: mvn clean package -B
 
       - name: Archive build artifact
         uses: actions/upload-artifact@v4
         with:
           name: mule-app
-          path: target/*.jar  # adjust if your artifact name is different
+          path: target/*.jar  # adjust if artifact name differs
 
   publish-and-deploy:
     name: Publish to Exchange & Deploy to CloudHub
     runs-on: ubuntu-latest
     needs: build
 
-    # 👇 Inject the credentials as JVM options so Maven can resolve ${env.VAR}
+    # Inject Connected App credentials as environment variables
     env:
       ANYPOINT_CONNECTED_APP_CLIENT_ID: ${{ secrets.ANYPOINT_CONNECTED_APP_CLIENT_ID }}
       ANYPOINT_CONNECTED_APP_CLIENT_SECRET: ${{ secrets.ANYPOINT_CONNECTED_APP_CLIENT_SECRET }}
@@ -68,12 +68,12 @@ jobs:
           mkdir -p ~/.m2
           cp ./settings.xml ~/.m2/settings.xml
 
-      - name: Debug Maven env vars (optional — remove after testing)
+      # Optional debug (remove after confirming secrets are loaded correctly)
+      - name: Debug environment variables
         run: |
-          echo "Client ID: ${ANYPOINT_CONNECTED_APP_CLIENT_ID}"
           echo "Client Secret length: ${#ANYPOINT_CONNECTED_APP_CLIENT_SECRET}"
 
-      - name: Deploy to Exchange (publish)
+      - name: Publish to Exchange
         run: mvn deploy -B -Dmaven.test.skip=true --settings ~/.m2/settings.xml
 
       - name: Deploy to CloudHub
